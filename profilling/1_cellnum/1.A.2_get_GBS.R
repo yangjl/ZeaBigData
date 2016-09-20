@@ -1,28 +1,32 @@
 ### Jinliang Yang
 ### Sept. 21th, 2016
 
-
-library("farmeR")
-
 #### genotypes
-gt0 <- read.table("/home/jolyang/dbcenter/HapMap/HapMap3/vcf.header", header=F)
-gt <- as.data.frame(t(gt0[, -1:-9])) 
-names(gt) <- "genotype"
+gt0 <- read.csv("data/AllZeaGBSv2.7_publicSamples_metadata20140411.csv", header=T)
+gt <- subset(gt0, Project %in% c("2010 Ames Lines", "AMES Inbreds", "Ames282") )
+gt$Pedigree <- as.character(gt$Pedigree)
 
 ### 
 sam <- read.csv("data/SAM_cellcount.csv")
 sam <- subset(sam, !is.na(Count_Cells))
 id <- as.character(unique(sam$Genotype))
 
-subset(gt, genotype %in% id)
+sub <- subset(gt, toupper(DNASample) %in% toupper(id) | Pedigree %in% toupper(id))
+as.character(unique(sub$DNASample))
+length(unique(sub$DNASample, sub$Pedigree))
+
+sub <- sub[order(sub$DNASample),]
+write.table(sub, "cache/cellnum_GBS_sampleid.csv", sep=",", row.names=FALSE, quote=FALSE)
+###>>> Manually curated the ids
 
 
-
-
-### convert to PLINK
+### extract id and convert to PLINK
 cmd1 <- c("cd /home/jolyang/dbcenter/HapMap/HapMap3")
-cmd2 <- paste("plink -vcf merged_flt_c1.vcf.gz --biallelic-only --snps-only --set-missing-var-ids @_# --out plink_chr1", 
+cmd2 <- paste("plink -vcf AllZeaGBSv2.7_publicSamples_imputedV3b_agpv3_sorted.vcf.gz",
+              "--biallelic-only --snps-only --set-missing-var-ids @_# --out plink_chr1", 
               "--allow-extra-chr --freq")
+
+
 
 set_farm_job(slurmsh = "slurm-script/bcf2plink.sh",
              shcode = c(cmd1, cmd2), wd = NULL, jobid = "maf",
