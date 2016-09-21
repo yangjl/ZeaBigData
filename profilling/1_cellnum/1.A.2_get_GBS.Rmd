@@ -1,12 +1,24 @@
-### Jinliang Yang
-### Sept. 21th, 2016
+---
+title: "Get GBS"
+output: pdf_document
+---
 
-#### genotypes
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir=normalizePath('../../'))
+```
+
+## Extract GBS Data
+
+On `farm`, extract GBS data (v2.7 on AGPv3, imputed) for 14 genotypes.
+
+```{r, eval=FALSE}
+#### GBS genotypes
 gt0 <- read.csv("data/AllZeaGBSv2.7_publicSamples_metadata20140411.csv", header=T)
 gt <- subset(gt0, Project %in% c("2010 Ames Lines", "AMES Inbreds", "Ames282") )
 gt$Pedigree <- as.character(gt$Pedigree)
 
-### 
+### 14 ids
 sam <- read.csv("data/SAM_cellcount.csv")
 sam <- subset(sam, !is.na(Count_Cells))
 id <- as.character(unique(sam$Genotype))
@@ -28,8 +40,14 @@ cmd <- paste("bcftools view -S /home/jolyang/Documents/Github/zmHapMap/cache/id1
              "--no-update -m2 -M2 -v snps", 
              "AllZeaGBSv2.7_publicSamples_imputedV3b_agpv3_sorted.vcf.gz",
              "-Oz -o AllZeaGBSv2.7_id14_imputedV3b.vcf.gz")
+set_farm_job(slurmsh = "slurm-script/bcf2plink.sh",
+             shcode = c(tabix, cmd), wd = NULL, jobid = "bcftools",
+             email = "yangjl0930@gmail.com", runinfo = c(TRUE, "bigmemh", "3", "23000"))
+```
 
 
+## Filtering
+```{r, eval=FALSE}
 ### extract id and convert to PLINK
 cmd1 <- c("mv /home/jolyang/dbcenter/AllZeaGBS/AllZeaGBSv2.7_id14_imputedV3b.vcf.gz largedata/")
 cmd2 <- "cd largedata"
@@ -40,22 +58,29 @@ cmd3 <- paste("plink -vcf AllZeaGBSv2.7_id14_imputedV3b.vcf.gz",
 set_farm_job(slurmsh = "slurm-script/bcf2plink.sh",
              shcode = c(cmd1, cmd2, cmd3), wd = NULL, jobid = "maf",
              email = "yangjl0930@gmail.com", runinfo = c(TRUE, "bigmemh", "3", "23000"))
+```
 
-#### plot to see the results
+### Including Plots
 
 
-#########################################
-for(i in 1:10){
-  shid <- paste0("slurm-script/runplink_", i, ".sh")
-  cmd1 <- c("cd /home/jolyang/dbcenter/HapMap/HapMap3")
-  cmd2 <- paste0("plink -vcf merged_flt_c", i, ".vcf.gz --biallelic-only --snps-only", 
-                 " --set-missing-var-ids @_# --out plink_chr", i, 
-                 " --allow-extra-chr --freq")
-  cat(c(cmd1, cmd2), file=shid, sep="\n", append=FALSE)
-}
-shcode <- "sh slurm-script/runplink_$SLURM_ARRAY_TASK_ID.sh"
+```{r, echo=T, warning=FALSE}
+library(data.table)
+frq <- fread("largedata/GBSv2.7_id14.frq")
+lmiss <- fread("largedata/GBSv2.7_id14.lmiss")
 
-set_array_job(shid="slurm-script/runplink.sh", shcode=shcode,
-              arrayjobs="1-10", wd=NULL, jobid="plink", email="yangjl0930@gmail.com",
-              run = c(TRUE, "bigmemh", 4))
+d <- merge(frq[,2:5, with=FALSE], lmiss[, 2:5, with=FALSE], by="SNP")
+d <- as.data.frame(d)
+snps <- nrow(subset(d, MAF > 0.01 & lmiss < 0.6))
+```
+
+We kept only **717,588** biallelic SNPs. After filtering MAF > 0.01 and lmiss < 0.6 in the 14 genotypes, `r snps` SNPs remain. 
+
+```{r}
+par(mfrow=c(1,2))
+hist(d$MAF[d$MAF > 0], main="GBS MAF (N=14)", xlab="minor allele frq", col="#458b74")
+hist(d$F_MISS, main="GBS missing rate (N=14)", xlab="missing rate", col="#458b74")
+```
+
+
+
 
