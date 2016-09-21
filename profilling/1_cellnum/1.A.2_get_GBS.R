@@ -19,6 +19,16 @@ sub <- sub[order(sub$DNASample),]
 write.table(sub, "cache/cellnum_GBS_sampleid.csv", sep=",", row.names=FALSE, quote=FALSE)
 ###>>> Manually curated the ids
 
+#### extract subset of the data: biallelic SNPs only and no-update
+ids <- read.csv("cache/cellnum_GBS_sampleid_curated.csv")
+write.table(ids[, 1], "cache/id14.txt", sep="\t", row.names=FALSE, col.names=FALSE, quote=FALSE)
+
+tabix <- "tabix -p vcf AllZeaGBSv2.7_publicSamples_imputedV3b_agpv3_sorted.vcf.gz"
+cmd <- paste("bcftools view -S /home/jolyang/Documents/Github/zmHapMap/cache/id14.txt",
+             "--no-update -m2 -M2 -v snps", 
+             "AllZeaGBSv2.7_publicSamples_imputedV3b_agpv3_sorted.vcf.gz",
+             "-Oz -o AllZeaGBSv2.7_id14_imputedV3b.vcf.gz")
+
 
 ### extract id and convert to PLINK
 cmd1 <- c("cd /home/jolyang/dbcenter/HapMap/HapMap3")
