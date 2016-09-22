@@ -105,6 +105,31 @@ ggplot(p1, aes(y=DTA, x=cellnum))+
 summary(lm(data=p1, DTA ~ cellnum + Growth))
 ```
 
+
+### Fit Linear Mixed Model with relatedness matrix as random
+
+```{r}
+fam0 <- read.table("cache/GBSv2.7_id14_flt.fam", header=F)
+
+idcurated <- read.csv("cache/cellnum_GBS_sampleid_curated.csv")
+fam <- merge(fam0, idcurated[, c("FullName", "DNASample")], by.x="V1", by.y="FullName", sort=FALSE)
+fam$DNASample <- toupper(fam$DNASample)
+
+#### Relatedness estimated from GEMMA
+mx <- read.table("cache/relate.cXX.txt")
+heatmap(mx)
+row.names(mx) <- fam$DNASample
+names(mx) <- fam$DNASample
+
+library(d3heatmap)
+d3heatmap(mx, scale = "column", dendrogram = "none", color = "Blues")
+```
+
+
+
+
+
+
 ```{r, eval=FALSE}
 #cell count, SAM volume
 ggplot(plantcount,aes(y=SAM_volume,x=cell_number))+
