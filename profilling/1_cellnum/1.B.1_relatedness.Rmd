@@ -83,6 +83,18 @@ hist(d$MAF[d$MAF > 0], main="GBS MAF (N=14)", xlab="minor allele frq", col="#458
 hist(d$F_MISS, main="GBS missing rate (N=14)", xlab="missing rate", col="#458b74")
 ```
 
+## Remove those SNPs using PLINK and make bed files
+
+```{r, eval=FALSE}
+cmd <- paste("plink -bfile GBSv2.7_id14",
+             "--allow-extra-chr --make-bed --maf 0.01 --geno 0.6",
+             "--out GBSv2.7_id14_flt")
+
+set_farm_job(slurmsh = "slurm-script/bcf2plink.sh",
+             shcode = cmd, wd = NULL, jobid = "maf",
+             email = "yangjl0930@gmail.com", runinfo = c(TRUE, "bigmemh", "3", "23000"))
+```
+
 ## GEMMA for relatedness calculation
 ```{r}
 cmd <- "gemma -bfile GBSv2.7_id14_flt -gk 2 -o mx"
