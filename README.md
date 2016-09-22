@@ -1,17 +1,17 @@
 # Maize Data
 Exploring NGS data of zea mays
 
----------
+
 
 ## zmAGP Reference Genome
 
 
-----------
+
 
 
 ## zmWGS
 
---------------
+
 
 ## zmHapMap
 ### Current Version downloaded on `8/22/2016` using `iget`.
@@ -25,7 +25,7 @@ icd /iplant/home/shared/panzea/hapmap3/hmp321/unimputed/
 1. WGS data from 1,210 maize lines.
 2. 83 million SNPs (30 million SNPs marked with LLD are high confidence markers)
 
-----------
+
 
 ## ZeaGBS
 
@@ -41,12 +41,11 @@ iget AllZeaGBSv2.7_publicSamples_imputedV3b_agpv3_sorted.vcf.gz
 
 
 
-----------
 
 ## zmTx Transcriptome
 
 
----------
+
 
 ## zmMe Methylome
 
