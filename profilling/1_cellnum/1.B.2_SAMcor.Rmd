@@ -101,15 +101,20 @@ p1 <- plantcount[, c("genotype", "g1", "g2", "g3")] %>%
   gather(key="Growth", value="cellnum", 2:4) %>%
   merge(plantcount[, 1:8], by="genotype")
 p1$Growth <- toupper(p1$Growth)
+names(p1)[1] <- "Genotype"
 
-ggplot(p1, aes(y=DTA, x=cellnum))+
-  geom_point(aes(color=genotype))+
+p <- ggplot(p1, aes(y=DTA, x=cellnum))+
+  geom_point(aes(color=Genotype))+
   geom_smooth(color="dark grey")+
   facet_wrap(~Growth, scales="free_x")+
   xlab("Cell Number")+
   ylab("Flowering Time")
 
 #summary(lm(data=p1, DTA ~ cellnum + Growth))
+pdf("graphs/Fig_cellnum_flowering.pdf", width=8, height=5)
+p
+dev.off()
+
 ```
 
 
