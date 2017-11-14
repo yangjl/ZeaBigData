@@ -105,7 +105,7 @@ names(p1)[1] <- "Genotype"
 
 p <- ggplot(p1, aes(y=DTA, x=cellnum))+
   geom_point(aes(color=Genotype))+
-  geom_smooth(color="dark grey")+
+  geom_smooth(color="dark grey", method="lm")+
   facet_wrap(~Growth, scales="free_x")+
   xlab("Cell Number")+
   ylab("Flowering Time")
